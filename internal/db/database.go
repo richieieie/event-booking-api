@@ -46,7 +46,7 @@ func InitDb() error {
 		sqlDB.SetMaxIdleConns(5)
 		sqlDB.SetConnMaxLifetime(30 * time.Minute)
 
-		if err := Db.AutoMigrate(&model.Event{}, &model.User{}); err != nil {
+		if err := Db.AutoMigrate(&model.Event{}, &model.User{}, &model.Registration{}); err != nil {
 			return fmt.Errorf("failed to migrate database: %w", err)
 		}
 

@@ -15,6 +15,14 @@ type IEventRepository interface {
 	CreateOne(event model.Event) (int, error)
 	UpdateOne(id int, event model.Event, userId int64) error
 	DeleteOne(id int, userId int64) error
+	RegisterEvent(eventId int, userId int64) (*model.Registration, error)
+	UnregisterEvent(eventId int, userId int64) error
+}
+
+func (r eventRepository) UnregisterEvent(eventId int, userId int64) error {
+	err := r.db.Where("event_id = ? and user_id = ?", eventId, userId).Delete(&model.Registration{}).Error
+
+	return err
 }
 
 type eventRepository struct {
@@ -86,4 +94,13 @@ func (e *eventRepository) DeleteOne(id int, userId int64) error {
 	}
 
 	return nil
+}
+
+func (r eventRepository) RegisterEvent(eventId int, userId int64) (*model.Registration, error) {
+	registration := model.Registration{EventId: eventId, UserId: userId}
+	err := r.db.Create(&registration).Error
+	if err != nil {
+		return nil, fmt.Errorf("could not register event with id %d", eventId)
+	}
+	return &registration, nil
 }

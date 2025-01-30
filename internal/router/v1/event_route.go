@@ -104,6 +104,38 @@ func (handler EventHandler) DeleteEventById(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (handler EventHandler) RegisterEventById(c *gin.Context) {
+	eventId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id", "message": "Please ensure that the event id is correct"})
+		return
+	}
+	userId := c.GetInt64("userId")
+	regId, err := handler.iEventService.RegisterEvent(eventId, userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot register", "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "ok", "registrationId": regId})
+}
+
+func (handler EventHandler) UnregisterEventById(c *gin.Context) {
+	eventId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id", "message": "Please ensure that the event id is correct"})
+		return
+	}
+	userId := c.GetInt64("userId")
+	err = handler.iEventService.UnregisterEvent(eventId, userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot unregister", "message": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func InitEventHandler(r *gin.RouterGroup) {
 	// Repository
 	var iEventRepository repository.IEventRepository = repository.NewEventRepository(database.Db)
@@ -122,5 +154,7 @@ func InitEventHandler(r *gin.RouterGroup) {
 		authenticate.POST("/", middlewares.Authenticate, handler.CreateEvent)
 		authenticate.PUT("/:id", handler.UpdateEventById)
 		authenticate.DELETE("/:id", handler.DeleteEventById)
+		authenticate.POST("/:id/register", handler.RegisterEventById)
+		authenticate.DELETE("/:id/unregister", handler.UnregisterEventById)
 	}
 }

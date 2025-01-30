@@ -1,22 +1,22 @@
 package service
 
 import (
+	"fmt"
+
 	dto "github.com/richieieie/event-booking/internal/DTO"
 	"github.com/richieieie/event-booking/internal/model"
 	"github.com/richieieie/event-booking/internal/repository"
 )
 
-// Use can map Event model to EventResponseDTO and vice versa, but I'm too lazy right now
-// type EventResponseDTO struct {
-
-// }
-
+// In UnregisterEvent method, We can use RegistrationId to delete, but I will use both eventId and userId to delete
 type IEventService interface {
 	GetAll() ([]model.Event, error)
 	GetById(id int) (model.Event, error)
 	CreateOne(eventDto dto.CreateEventDTO) (int, error)
 	UpdateOne(id int, eventDto dto.EventUpdateDTO, userId int64) error
 	DeleteOne(id int, userId int64) error
+	RegisterEvent(eventId int, userId int64) (int64, error)
+	UnregisterEvent(eventId int, userId int64) error
 }
 
 type eventService struct {
@@ -75,4 +75,32 @@ func (e *eventService) DeleteOne(id int, userId int64) error {
 	// For example: maybe we want to validate the input here
 	// I do not have any ideas right now, so I just put the response from repository call here
 	return e.iEventRepository.DeleteOne(id, userId)
+}
+
+func (e *eventService) RegisterEvent(eventId int, userId int64) (int64, error) {
+	_, err := e.iEventRepository.GetById(eventId)
+	if err != nil {
+		return 0, fmt.Errorf("could not find event with id %d", eventId)
+	}
+
+	registration, err := e.iEventRepository.RegisterEvent(eventId, userId)
+	if err != nil {
+		return 0, fmt.Errorf("could not register event with id %d", eventId)
+	}
+
+	return registration.Id, nil
+}
+
+func (e *eventService) UnregisterEvent(eventId int, userId int64) error {
+	_, err := e.iEventRepository.GetById(eventId)
+	if err != nil {
+		return fmt.Errorf("could not find event with id %d", eventId)
+	}
+
+	err = e.iEventRepository.UnregisterEvent(eventId, userId)
+	if err != nil {
+		return fmt.Errorf("could not unregister event with id %d", eventId)
+	}
+
+	return nil
 }

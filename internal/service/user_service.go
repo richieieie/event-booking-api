@@ -34,7 +34,7 @@ func (s userService) Login(userDto dto.LoginUserDTO) (string, error) {
 		return "", err
 	}
 
-	accessToken, err := utils.GenerateJwtToken(user)
+	accessToken, err := utils.GenerateJwtToken(user.Email, user.Id)
 	return accessToken, err
 }
 

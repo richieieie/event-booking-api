@@ -15,8 +15,8 @@ type IEventService interface {
 	GetAll() ([]model.Event, error)
 	GetById(id int) (model.Event, error)
 	CreateOne(eventDto dto.CreateEventDTO) (int, error)
-	UpdateOne(id int, eventDto dto.EventUpdateDTO) error
-	DeleteOne(id int) error
+	UpdateOne(id int, eventDto dto.EventUpdateDTO, userId int64) error
+	DeleteOne(id int, userId int64) error
 }
 
 type eventService struct {
@@ -54,10 +54,11 @@ func (e *eventService) CreateOne(eventDto dto.CreateEventDTO) (int, error) {
 		Description: eventDto.Description,
 		Location:    eventDto.Location,
 		DateTime:    eventDto.DateTime,
+		UserId:      eventDto.UserId,
 	})
 }
 
-func (e *eventService) UpdateOne(id int, eventDto dto.EventUpdateDTO) error {
+func (e *eventService) UpdateOne(id int, eventDto dto.EventUpdateDTO, userId int64) error {
 	// Add business logic here
 	// For example: maybe we want to validate the input here
 	// I do not have any ideas right now, so I just put the response from repository call here
@@ -66,12 +67,12 @@ func (e *eventService) UpdateOne(id int, eventDto dto.EventUpdateDTO) error {
 		Description: eventDto.Description,
 		Location:    eventDto.Location,
 		DateTime:    eventDto.DateTime,
-	})
+	}, userId)
 }
 
-func (e *eventService) DeleteOne(id int) error {
+func (e *eventService) DeleteOne(id int, userId int64) error {
 	// Add business logic here
 	// For example: maybe we want to validate the input here
 	// I do not have any ideas right now, so I just put the response from repository call here
-	return e.iEventRepository.DeleteOne(id)
+	return e.iEventRepository.DeleteOne(id, userId)
 }

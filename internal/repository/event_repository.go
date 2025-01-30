@@ -13,8 +13,8 @@ type IEventRepository interface {
 	GetAll() ([]model.Event, error)
 	GetById(id int) (model.Event, error)
 	CreateOne(event model.Event) (int, error)
-	UpdateOne(id int, event model.Event) error
-	DeleteOne(id int) error
+	UpdateOne(id int, event model.Event, userId int64) error
+	DeleteOne(id int, userId int64) error
 }
 
 type eventRepository struct {
@@ -54,11 +54,11 @@ func (e *eventRepository) CreateOne(event model.Event) (int, error) {
 	return event.Id, nil
 }
 
-func (e *eventRepository) UpdateOne(id int, eventToUpdate model.Event) error {
+func (e *eventRepository) UpdateOne(id int, eventToUpdate model.Event, userId int64) error {
 	var event model.Event
-	err := e.db.First(&event, id).Error
+	err := e.db.Where("id = ? and user_id = ?", id, userId).First(&event).Error
 	if err != nil {
-		return fmt.Errorf("could not find event with id %d", id)
+		return fmt.Errorf("could not find your event with id %d", id)
 	}
 
 	event.Name = eventToUpdate.Name
@@ -67,22 +67,22 @@ func (e *eventRepository) UpdateOne(id int, eventToUpdate model.Event) error {
 	event.DateTime = eventToUpdate.DateTime
 	err = e.db.Save(&event).Error
 	if err != nil {
-		return fmt.Errorf("could not update event with id %d", id)
+		return fmt.Errorf("could not update your event with id %d", id)
 	}
 
 	return nil
 }
 
-func (e *eventRepository) DeleteOne(id int) error {
+func (e *eventRepository) DeleteOne(id int, userId int64) error {
 	var event model.Event
-	err := e.db.First(&event, id).Error
+	err := e.db.Where("id = ? and user_id = ?", id, userId).First(&event).Error
 	if err != nil {
-		return fmt.Errorf("could not find event with id %d", id)
+		return fmt.Errorf("could not find your event with id %d", id)
 	}
 
 	err = e.db.Delete(&event).Error
 	if err != nil {
-		return fmt.Errorf("could not delete event with id %d", id)
+		return fmt.Errorf("could not delete your event with id %d", id)
 	}
 
 	return nil

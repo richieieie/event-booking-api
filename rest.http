@@ -5,39 +5,43 @@ GET {{base_url}}/events HTTP/1.1
 Content-Type: application/json
 
 ###
-@get_by_id = 4
+@get_by_id = 1
 GET {{base_url}}/events/{{get_by_id}} HTTP/1.1
 Content-Type: application/json
 
 ###
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJUcnVuZ0RlcFRyYWkiLCJhdWQiOlsiIl0sImV4cCI6MTczODI0ODA1NiwibmJmIjoxNzM4MjQ2MjU2LCJpYXQiOjE3MzgyNDYyNTYsImp0aSI6IjIifQ.AKrfVEov64Mxs_15ZLR0ytzjAZ_pkhREJvxl0QW8WOQ
 POST {{base_url}}/events HTTP/1.1
+Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-    "name": "Event 4",
-    "description": "Event 4 description",
-    "location": "Event 4 location",
-    "date_time": "2025-01-28T19:00:00+07:00"
+    "name": "Event Test",
+    "description": "Event Test description",
+    "location": "Event Test location",
+    "dateTime": "2025-01-28T19:00:00+07:00"
 }
 
 ###
-@update_by_id = 4
+@update_by_id = 1
 PUT {{base_url}}/events/{{update_by_id}} HTTP/1.1
+Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-    "name": "Event 4 Updated",
-    "description": "Event 4 description Updated",
-    "location": "Event 4 location Updated",
-    "date_time": "2025-01-28T19:00:00+07:00"
+    "name": "Event Test Updated",
+    "description": "Event Test description Updated",
+    "location": "Event Test location Updated",
+    "dateTime": "2025-01-28T19:00:00+07:00"
 }
 
 ###
-@delete_by_id = 4
+@delete_by_id = 2
 DELETE {{base_url}}/events/{{delete_by_id}} HTTP/1.1
+Authorization: Bearer {{jwt_token}}
 
 ###
-@get_by_email = john@example.com
+@get_by_email = test@example.com
 POST  {{base_url}}/users/login HTTP/1.1
 Content-Type: application/json
 

@@ -22,7 +22,7 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 
 func (r userRepository) GetByEmailAndPassword(email string) (model.User, error) {
 	var user model.User
-	err := r.db.Where("email = ?", email).First(&user).Error
+	err := r.db.Select("id", "password").Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return model.User{}, err
 	}

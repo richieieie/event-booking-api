@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/richieieie/event-booking/internal/DTO"
 	database "github.com/richieieie/event-booking/internal/db"
+	middlewares "github.com/richieieie/event-booking/internal/middleware"
 	"github.com/richieieie/event-booking/internal/repository"
 	"github.com/richieieie/event-booking/internal/service"
 )
@@ -45,13 +46,14 @@ func (handler *EventHandler) GetEventById(c *gin.Context) {
 }
 
 func (handler EventHandler) CreateEvent(c *gin.Context) {
+	userId := c.GetInt64("userId")
 	var eventDTO dto.CreateEventDTO
 	err := c.ShouldBindJSON(&eventDTO)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Request does not contain enough fields", "message": "Please ensure that your request body contains name, description, location and date_time fields"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request does not contain enough fields", "message": "Please ensure that your request body contains name, description, location and dateTime fields"})
 		return
 	}
-
+	eventDTO.UserId = userId
 	id, err := handler.iEventService.CreateOne(eventDTO)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create data", "message": err.Error()})
@@ -62,6 +64,7 @@ func (handler EventHandler) CreateEvent(c *gin.Context) {
 }
 
 func (handler EventHandler) UpdateEventById(c *gin.Context) {
+	userId := c.GetInt64("userId")
 	var eventDTO dto.EventUpdateDTO
 	err := c.ShouldBindJSON(&eventDTO)
 	if err != nil {
@@ -75,9 +78,9 @@ func (handler EventHandler) UpdateEventById(c *gin.Context) {
 		return
 	}
 
-	err = handler.iEventService.UpdateOne(id, eventDTO)
+	err = handler.iEventService.UpdateOne(id, eventDTO, userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id", "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot update", "message": err.Error()})
 		return
 	}
 
@@ -85,15 +88,16 @@ func (handler EventHandler) UpdateEventById(c *gin.Context) {
 }
 
 func (handler EventHandler) DeleteEventById(c *gin.Context) {
+	userId := c.GetInt64("userId")
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id", "message": "Please ensure that the event id is correct"})
 		return
 	}
 
-	err = handler.iEventService.DeleteOne(id)
+	err = handler.iEventService.DeleteOne(id, userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id", "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete", "message": err.Error()})
 		return
 	}
 
@@ -113,8 +117,10 @@ func InitEventHandler(r *gin.RouterGroup) {
 	{
 		eventV1.GET("/", handler.GetEvents)
 		eventV1.GET("/:id", handler.GetEventById)
-		eventV1.POST("/", handler.CreateEvent)
-		eventV1.PUT("/:id", handler.UpdateEventById)
-		eventV1.DELETE("/:id", handler.DeleteEventById)
+		authenticate := eventV1.Group("/")
+		authenticate.Use(middlewares.Authenticate)
+		authenticate.POST("/", middlewares.Authenticate, handler.CreateEvent)
+		authenticate.PUT("/:id", handler.UpdateEventById)
+		authenticate.DELETE("/:id", handler.DeleteEventById)
 	}
 }

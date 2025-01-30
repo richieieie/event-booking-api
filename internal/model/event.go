@@ -11,5 +11,5 @@ type Event struct {
 	Location    string    `gorm:"type:varchar(255);not null"`
 	DateTime    time.Time `gorm:"not null"` // By default, will be stored as timestamp
 	UserId      int64     `gorm:"not null"`
-	User        User      `gorm:"not null;foreignKey:UserId;"`
+	User        *User     `gorm:"not null;foreignKey:UserId;"`
 }
